@@ -9,6 +9,7 @@ use crate::object::{Attribute, ObjectHandle};
 use crate::session::Session;
 use cryptoki_sys::{CK_ATTRIBUTE, CK_MECHANISM, CK_MECHANISM_PTR};
 use std::convert::TryInto;
+use std::ptr::null_mut;
 
 impl Session {
     /// Generate a secret key
@@ -91,6 +92,29 @@ impl Session {
         }
 
         Ok(ObjectHandle::new(handle))
+    }
+
+    /// Derives a key from a base key
+    pub fn derive_key_no_return(
+        &self,
+        mechanism: &Mechanism,
+        base_key: ObjectHandle,
+    ) -> Result<()> {
+        let mut mechanism: CK_MECHANISM = mechanism.into();
+
+        unsafe {
+            Rv::from(get_pkcs11!(self.client(), C_DeriveKey)(
+                self.handle(),
+                &mut mechanism as CK_MECHANISM_PTR,
+                base_key.handle(),
+                null_mut(),
+                0,
+                null_mut(),
+            ))
+            .into_result(Function::DeriveKey)?;
+        }
+
+        Ok(())
     }
 
     /// Wrap key

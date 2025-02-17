@@ -968,6 +968,12 @@ impl ObjectHandle {
     }
 }
 
+impl From<u64> for ObjectHandle {
+    fn from(handle: u64) -> Self {
+        Self::new(handle)
+    }
+}
+
 impl std::fmt::Display for ObjectHandle {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.handle)
